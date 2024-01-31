@@ -11,13 +11,15 @@ const Chat = () => {
   const socket = io("http://localhost:6001");
 
   useEffect(() => {
-    // arrange()
     if (me) {
       getData();
       socket.on("chat", (msg) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
       });
     }
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const getData = async () => {
@@ -47,7 +49,7 @@ const Chat = () => {
     <>
       <div className="bg-gray-700 w-screen flex flex-col justify-between">
         <div className="flex flex-col gap-2 pt-2">
-          {messages &&
+          {messages.length > 0 && me &&
             messages.map((msg, index) => {
               const isSentByMe = msg.from === me.id;
 
