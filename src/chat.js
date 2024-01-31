@@ -9,21 +9,30 @@ const Chat = () => {
   const params = useParams();
   const [msg, setMsg] = useState("");
   const socket = io("http://localhost:6001");
-  const [socketID  , setSocketID] = useState()
+
+  setInterval(()=> {
+    console.log('asfg');
+    socket.on("chat", (msg) => {
+      console.log(msg);
+      setMessages((prevMessages) => [...prevMessages, msg]);
+    });
+  },10000)
+
   useEffect(() => {
     if (me) {
       getData();
       setMessages([])
 
-      let message = socket.on("chat", (msg) => {
+      socket.on("chat", (msg) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
       });
-      setSocketID(message.id)
+      
     }
-    return () => {
-      socket.disconnect();
-    };
-  },[params.id , socketID])
+    // return () => {
+    //   socket.disconnect();
+    // };
+  },[params.id ])
+
 
   const getData = async () => {
     try {
@@ -41,6 +50,10 @@ const Chat = () => {
   };
 
   const onSend = () => {
+    if(msg.trim() == '' ){
+      setMsg('')
+      return
+    }
     socket.emit("chat", { from: me.id, to: params.id, message: msg });
     socket.on("chat", (msg) => {
       setMessages((prevMessages) => [...prevMessages, msg]);
