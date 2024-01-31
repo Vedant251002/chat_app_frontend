@@ -9,18 +9,21 @@ const Chat = () => {
   const params = useParams();
   const [msg, setMsg] = useState("");
   const socket = io("http://localhost:6001");
-
+  const [socketID  , setSocketID] = useState()
   useEffect(() => {
     if (me) {
       getData();
-      socket.on("chat", (msg) => {
+      setMessages([])
+
+      let message = socket.on("chat", (msg) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
       });
+      setSocketID(message.id)
     }
     return () => {
       socket.disconnect();
     };
-  }, []);
+  },[params.id , socketID])
 
   const getData = async () => {
     try {
