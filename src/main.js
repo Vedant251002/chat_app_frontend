@@ -18,7 +18,7 @@ const Main = () => {
         console.log("could not get users");
       }
       let users = await response.json();
-      users = users.filter((user) => user.id != localStorage.getItem("user"));
+      // users = users.filter((user) => user.id != localStorage.getItem("user"));
       setUsers(users);
     } catch (error) {
       console.log(error);

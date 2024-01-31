@@ -3,60 +3,38 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router";
 import io from "socket.io-client";
 
+
 const Chat = () => {
+  const socket = io("http://localhost:6001");
   const [messages, setMessages] = useState([]);
   const me = useSelector((state) => state.user.user);
   const params = useParams();
   const [msg, setMsg] = useState("");
-  const socket = io("http://localhost:6001");
-
-  setInterval(()=> {
-    console.log('asfg');
-    socket.on("chat", (msg) => {
-      console.log(msg);
-      setMessages((prevMessages) => [...prevMessages, msg]);
-    });
-  },10000)
 
   useEffect(() => {
     if (me) {
-      getData();
+      socket.emit('connected-users' , {sender : localStorage.getItem('user') , target : params.id})
       setMessages([])
-
-      socket.on("chat", (msg) => {
+      socket.on("receive-chat", (msg) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
       });
       
     }
-    // return () => {
-    //   socket.disconnect();
-    // };
+    return () => {
+      socket.disconnect();
+    };
   },[params.id ])
 
 
-  const getData = async () => {
-    try {
-      const response = await fetch(`http://localhost:6001/target_user`, {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ userId: me.id, targetUser: +params.id }),
-      });
-      if (!response.ok) {
-        throw new Error("could not get users messages");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const onSend = () => {
     if(msg.trim() == '' ){
       setMsg('')
       return
     }
-    socket.emit("chat", { from: me.id, to: params.id, message: msg });
-    socket.on("chat", (msg) => {
-      setMessages((prevMessages) => [...prevMessages, msg]);
+    socket.emit("send-chat", { from: me.id, to: params.id, message: msg });
+    socket.on("receive-chat", (msg) => {
+      setMessages((prevMessages) => [...prevMessages, msg.message]);
     });
     setMsg('')
   };
