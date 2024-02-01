@@ -5,37 +5,35 @@ import io from "socket.io-client";
 
 
 const Chat = () => {
-  const socket = io("http://localhost:6001");
   const [messages, setMessages] = useState([]);
   const me = useSelector((state) => state.user.user);
   const params = useParams();
   const [msg, setMsg] = useState("");
-
+  const [socket2 , setSocket2 ] = useState({})
   useEffect(() => {
+    const socket = io("http://localhost:6001");
+    setSocket2(socket)
+    setMessages([])
     if (me) {
       socket.emit('connected-users' , {sender : localStorage.getItem('user') , target : params.id})
-      setMessages([])
       socket.on("receive-chat", (msg) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
       });
-      
     }
     return () => {
       socket.disconnect();
     };
-  },[params.id ])
-
-
+  },[params.id])
 
   const onSend = () => {
     if(msg.trim() == '' ){
       setMsg('')
       return
     }
-    socket.emit("send-chat", { from: me.id, to: params.id, message: msg });
-    socket.on("receive-chat", (msg) => {
-      setMessages((prevMessages) => [...prevMessages, msg.message]);
-    });
+    socket2.emit("send-chat", { from: me.id, to: params.id, message: msg });
+    
+      // setMessages((prevMessages) => [...prevMessages, msg]);
+    
     setMsg('')
   };
 
